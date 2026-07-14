@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>工事原価管理システム — ワトソン建設</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ===== RESET & BASE ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:       #f5f6f8;
+  --surface:  #ffffff;
+  --border:   #e2e5ea;
+  --text:     #111827;
+  --muted:    #6b7280;
+  --red:      #dc2626;
+  --red-bg:   #fef2f2;
+  --red-mid:  #fca5a5;
+  --amber:    #d97706;
+  --amber-bg: #fffbeb;
+  --amber-mid:#fcd34d;
+  --green:    #16a34a;
+  --green-bg: #f0fdf4;
+  --green-mid:#86efac;
+  --blue:     #2563eb;
+  --blue-bg:  #eff6ff;
+  --mono:     'IBM Plex Mono', monospace;
+  --sans:     'IBM Plex Sans JP', sans-serif;
+  --radius:   8px;
+  --shadow:   0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+  --shadow-md:0 4px 12px rgba(0,0,0,.10), 0 2px 4px rgba(0,0,0,.06);
+}
+html { font-family: var(--sans); font-size: 14px; color: var(--text); background: var(--bg); }
+body { min-height: 100vh; }
+button { font-family: var(--sans); cursor: pointer; border: none; background: none; }
+select { font-family: var(--sans); }
+
+/* ===== LAYOUT ===== */
+.app-shell { display: flex; flex-direction: column; min-height: 100vh; }
+
+/* ===== HEADER ===== */
+.header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 56px;
+  position: sticky; top: 0; z-index: 100;
+}
+.header-brand { display: flex; align-items: center; gap: 12px; }
+.header-logo {
+  width: 32px; height: 32px; border-radius: 6px;
+  background: var(--text); display: flex; align-items: center; justify-content: center;
+}
+.header-logo svg { width: 18px; height: 18px; fill: white; }
+.header-title { font-size: 15px; font-weight: 600; letter-spacing: -.01em; }
+.header-sub { font-size: 12px; color: var(--muted); font-weight: 400; margin-left: 4px; }
+.header-meta { font-size: 12px; color: var(--muted); font-family: var(--mono); }
+
+/* ===== NAV TABS ===== */
+.nav-tabs {
+  background: var(--surface);
+  border-bottom: 2px solid var(--border);
+  padding: 0 24px;
+  display: flex; gap: 0;
+}
+.tab-btn {
+  padding: 12px 20px;
+  font-size: 13px; font-weight: 500;
+  color: var(--muted);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: color .15s, border-color .15s;
+  display: flex; align-items: center; gap: 6px;
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--text); border-bottom-color: var(--text); font-weight: 600; }
+.tab-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 18px; height: 18px; padding: 0 5px;
+  border-radius: 9px; font-size: 11px; font-family: var(--mono); font-weight: 600;
+  background: var(--red); color: white;
+}
+
+/* ===== MAIN ===== */
+.main { padding: 24px; flex: 1; max-width: 1200px; width: 100%; margin: 0 auto; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ===== ALERT BANNER ===== */
+.alert-banner {
+  background: var(--red-bg);
+  border: 1px solid var(--red-mid);
+  border-left: 4px solid var(--red);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 20px;
+  font-size: 13px;
+}
+.alert-banner .alert-icon { font-size: 16px; flex-shrink: 0; }
+.alert-banner strong { color: var(--red); font-weight: 600; }
+
+/* ===== KPI CARDS ===== */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.kpi-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow);
+}
+.kpi-label { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
+.kpi-value { font-size: 26px; font-weight: 700; font-family: var(--mono); line-height: 1; }
+.kpi-value.danger { color: var(--red); }
+.kpi-value.warn   { color: var(--amber); }
+.kpi-value.ok     { color: var(--green); }
+.kpi-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+/* ===== PROJECT CARDS ===== */
+.project-list { display: flex; flex-direction: column; gap: 12px; }
+.project-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  transition: box-shadow .15s;
+}
+.project-card:hover { box-shadow: var(--shadow-md); }
+.project-card.status-danger { border-left: 4px solid var(--red);   background: var(--red-bg); }
+.project-card.status-warn   { border-left: 4px solid var(--amber); background: var(--amber-bg); }
+.project-card.status-ok     { border-left: 4px solid var(--green); background: var(--green-bg); }
+
+.card-header {
+  padding: 16px 20px;
+  display: flex; align-items: flex-start; gap: 16px;
+  cursor: pointer;
+  user-select: none;
+}
+.card-status-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px; border-radius: 12px;
+  font-size: 11px; font-weight: 700; letter-spacing: .04em;
+  flex-shrink: 0; margin-top: 2px;
+}
+.badge-danger { background: var(--red);   color: white; }
+.badge-warn   { background: var(--amber); color: white; }
+.badge-ok     { background: var(--green); color: white; }
+
+.card-info { flex: 1; }
+.card-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+.card-meta { font-size: 12px; color: var(--muted); display: flex; gap: 12px; flex-wrap: wrap; }
+.card-meta span::before { content: ''; }
+
+.card-numbers {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-left: auto;
+  text-align: right;
+  flex-shrink: 0;
+  min-width: 440px;
+}
+.num-block .num-label { font-size: 10px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 2px; }
+.num-block .num-val { font-size: 14px; font-weight: 600; font-family: var(--mono); }
+.num-block .num-val.highlight-danger { color: var(--red); }
+.num-block .num-val.highlight-warn   { color: var(--amber); }
+
+.card-chevron { font-size: 14px; color: var(--muted); transition: transform .2s; margin-top: 4px; flex-shrink: 0; }
+.card-header.open .card-chevron { transform: rotate(90deg); }
+
+/* ===== PROGRESS BAR ===== */
+.progress-row { padding: 0 20px 14px; display: flex; align-items: center; gap: 10px; }
+.progress-label { font-size: 11px; color: var(--muted); white-space: nowrap; width: 72px; }
+.progress-track { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 3px; transition: width .4s ease; }
+.fill-danger { background: var(--red); }
+.fill-warn   { background: var(--amber); }
+.fill-ok     { background: var(--green); }
+.progress-pct { font-size: 11px; font-family: var(--mono); font-weight: 600; width: 36px; text-align: right; }
+
+/* ===== ACCORDION DETAIL ===== */
+.card-detail { display: none; border-top: 1px solid var(--border); }
+.card-detail.open { display: block; }
+.detail-inner { padding: 16px 20px 20px; }
+.detail-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin-bottom: 12px; }
+
+/* ===== TABLE ===== */
+.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.data-table th {
+  text-align: left; padding: 8px 10px;
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--muted); border-bottom: 2px solid var(--border);
+  background: var(--bg);
+}
+.data-table th.r, .data-table td.r { text-align: right; }
+.data-table td { padding: 10px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr.total-row td { font-weight: 700; border-top: 2px solid var(--border); background: var(--bg); }
+.data-table tr:hover td { background: rgba(0,0,0,.02); }
+
+.diff-pill {
+  display: inline-flex; align-items: center; padding: 2px 8px;
+  border-radius: 10px; font-family: var(--mono); font-size: 12px; font-weight: 600;
+  white-space: nowrap;
+}
+.diff-over  { background: var(--red-bg);   color: var(--red);   }
+.diff-under { background: var(--green-bg); color: var(--green); }
+.diff-warn  { background: var(--amber-bg); color: var(--amber); }
+
+/* ===== SVG BAR CHART ===== */
+.chart-wrap { margin-top: 20px; }
+.chart-label { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 12px; }
+
+/* ===== TAB 2: BREAKDOWN ===== */
+.filter-row { display: flex; gap: 12px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; }
+.filter-row label { font-size: 12px; font-weight: 600; color: var(--muted); }
+.filter-select {
+  padding: 7px 12px; border: 1px solid var(--border); border-radius: 6px;
+  font-size: 13px; background: var(--surface); color: var(--text);
+  cursor: pointer; min-width: 260px;
+}
+.filter-select:focus { outline: 2px solid var(--blue); outline-offset: 1px; }
+
+.section-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+.section-title { font-size: 14px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+
+/* ===== TAB 3: VENDOR ===== */
+.vendor-filters { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+
+/* ===== EMPTY / FOOTER ===== */
+.footer { text-align: center; padding: 24px; font-size: 11px; color: var(--muted); border-top: 1px solid var(--border); margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="app-shell">
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-brand">
+    <div class="header-logo">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22" fill="none" stroke="white" stroke-width="2"/></svg>
+    </div>
+    <span class="header-title">工事原価管理システム</span>
+    <span class="header-sub">ワトソン建設株式会社</span>
+  </div>
+  <div class="header-meta">基準日：2026-07-01　／　<strong>モックアップ v0.1</strong></div>
+</header>
+
+<!-- NAV TABS -->
+<nav class="nav-tabs">
+  <button class="tab-btn active" data-tab="tab-overview">
+    工事一覧 <span class="tab-badge" id="alert-count">1</span>
+  </button>
+  <button class="tab-btn" data-tab="tab-breakdown">工種別内訳</button>
+  <button class="tab-btn" data-tab="tab-vendor">協力会社別</button>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- ========== TAB 1: 工事一覧 ========== -->
+  <div id="tab-overview" class="tab-panel active">
+    <div id="alert-banner-wrap"></div>
+    <div id="kpi-grid" class="kpi-grid"></div>
+    <div id="project-list" class="project-list"></div>
+  </div>
+
+  <!-- ========== TAB 2: 工種別内訳 ========== -->
+  <div id="tab-breakdown" class="tab-panel">
+    <div class="filter-row">
+      <label for="proj-select">表示工事</label>
+      <select id="proj-select" class="filter-select"></select>
+    </div>
+    <div id="breakdown-content"></div>
+  </div>
+
+  <!-- ========== TAB 3: 協力会社別 ========== -->
+  <div id="tab-vendor" class="tab-panel">
+    <div class="vendor-filters">
+      <div class="filter-row" style="margin-bottom:0">
+        <label for="vendor-proj">工事</label>
+        <select id="vendor-proj" class="filter-select" style="min-width:200px">
+          <option value="ALL">全工事</option>
+        </select>
+      </div>
+      <div class="filter-row" style="margin-bottom:0">
+        <label for="vendor-cat">工種</label>
+        <select id="vendor-cat" class="filter-select" style="min-width:160px">
+          <option value="ALL">全工種</option>
+        </select>
+      </div>
+    </div>
+    <div class="section-card">
+      <div class="section-title">協力会社別 発注・支払集計</div>
+      <table class="data-table" id="vendor-table">
+        <thead>
+          <tr>
+            <th>協力会社名</th>
+            <th>工種</th>
+            <th class="r">発注金額計（千円）</th>
+            <th class="r">支払済（千円）</th>
+            <th class="r">残高（千円）</th>
+            <th class="r">支払率</th>
+          </tr>
+        </thead>
+        <tbody id="vendor-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<footer class="footer">ワトソン建設株式会社 工事原価管理システム刷新プロジェクト — モックアップ（提案用）<br>FR-02 差異表示 / FR-03 アラート / FR-09 原価照会 対応イメージ</footer>
+</div>
+
+<script>
+/* ================================================================
+   DATA
+   ================================================================ */
+const ALERT_THRESHOLD = 10; // pt — FR-03（別紙基準）
+
+const PROJECTS = [
+  {
+    id: "K-001",
+    name: "大阪南港 倉庫新築工事",
+    branch: "大阪支店",
+    manager: "田中 誠司（所長）",
+    phase: "施工中",
+    start: "2026-04-01",
+    end: "2027-01-31",
+    contractAmount: 380000, // 千円
+    breakdown: [
+      { cat:"土工",   budget: 12000, actual: 14800,
+        vendors:[{name:"山田建材(株)",  paid:10200},{name:"(株)近畿土木",   paid: 4600}] },
+      { cat:"躯体",   budget: 98000, actual:105000,
+        vendors:[{name:"(株)中部コンクリート", paid:89000}] },
+      { cat:"仕上",   budget: 65000, actual: 52000,
+        vendors:[{name:"東洋設備工業(株)", paid:30000}] },
+      { cat:"設備",   budget: 45000, actual: 26600,
+        vendors:[{name:"山田建材(株)",  paid:14000},{name:"東洋設備工業(株)",paid:12600}] },
+    ]
+  },
+  {
+    id: "K-002",
+    name: "京都駅前 ビル改修工事",
+    branch: "京都支店",
+    manager: "山本 花子（所長）",
+    phase: "施工中",
+    start: "2026-01-10",
+    end: "2026-12-20",
+    contractAmount: 520000,
+    breakdown: [
+      { cat:"解体",   budget: 22000, actual: 23800,
+        vendors:[{name:"(株)中部土木解体", paid:23800}] },
+      { cat:"躯体",   budget:145000, actual:151000,
+        vendors:[{name:"(株)中部コンクリート",paid:130000}] },
+      { cat:"仕上",   budget:118000, actual:112000,
+        vendors:[{name:"大和内装(株)",       paid: 98000}] },
+      { cat:"設備",   budget: 98000, actual: 94500,
+        vendors:[{name:"東洋設備工業(株)",   paid: 80000},{name:"関電工(株)",paid:14500}] },
+      { cat:"外構",   budget: 28000, actual: 26800,
+        vendors:[{name:"山田建材(株)",       paid: 22000}] },
+    ]
+  },
+  {
+    id: "K-003",
+    name: "名古屋高速 橋梁補修工事",
+    branch: "名古屋支店",
+    manager: "鈴木 大介（所長）",
+    phase: "施工中",
+    start: "2026-06-01",
+    end: "2026-11-30",
+    contractAmount: 150000,
+    breakdown: [
+      { cat:"仮設",   budget:  8000, actual:  7200,
+        vendors:[{name:"(株)中部土木解体",  paid: 7200}] },
+      { cat:"躯体補修",budget: 62000, actual: 54000,
+        vendors:[{name:"(株)橋梁技研",      paid:48000}] },
+      { cat:"塗装",   budget: 28000, actual: 21000,
+        vendors:[{name:"山田建材(株)",       paid:18000}] },
+      { cat:"電気",   budget: 12000, actual:  9800,
+        vendors:[{name:"中部電気設備(株)",   paid: 9800}] },
+    ]
+  }
+];
+
+/* ================================================================
+   COMPUTE
+   ================================================================ */
+function compute(p) {
+  const totalBudget  = p.breakdown.reduce((s,r)=>s+r.budget, 0);
+  const totalActual  = p.breakdown.reduce((s,r)=>s+r.actual, 0);
+  const plannedRate  = totalBudget  / p.contractAmount;  // 実行予算率
+  const actualRate   = totalActual  / p.contractAmount;  // 発生原価率
+  const alertDiff    = (actualRate - plannedRate) * 100; // pt 差
+  let status = "ok";
+  if (alertDiff >= ALERT_THRESHOLD)          status = "danger";
+  else if (alertDiff >= ALERT_THRESHOLD - 5) status = "warn";
+  return { ...p, totalBudget, totalActual, plannedRate, actualRate, alertDiff, status };
+}
+const DATA = PROJECTS.map(compute).sort((a,b)=>b.alertDiff - a.alertDiff);
+
+/* ================================================================
+   HELPERS
+   ================================================================ */
+const fmt  = n => n.toLocaleString('ja-JP');
+const fmtK = n => fmt(Math.round(n)) + '千円';
+const fmtP = n => (n*100).toFixed(1) + '%';
+const fmtPt = n => (n >= 0 ? '+' : '') + n.toFixed(1) + 'pt';
+
+function statusLabel(s){ return {danger:'要注意', warn:'注意', ok:'正常'}[s]; }
+function statusClass(s){ return {danger:'badge-danger', warn:'badge-warn', ok:'badge-ok'}[s]; }
+function cardClass(s)  { return {danger:'status-danger', warn:'status-warn', ok:'status-ok'}[s]; }
+function fillClass(s)  { return {danger:'fill-danger', warn:'fill-warn', ok:'fill-ok'}[s]; }
+function diffClass(diff){
+  if (diff > 5)  return 'diff-over';
+  if (diff < -5) return 'diff-under';
+  return 'diff-warn';
+}
+
+/* ================================================================
+   TAB 1 — 工事一覧
+   ================================================================ */
+function renderOverview() {
+  const alertCount = DATA.filter(d=>d.status==='danger').length;
+  document.getElementById('alert-count').textContent = alertCount;
+
+  // Alert banner
+  const bannerWrap = document.getElementById('alert-banner-wrap');
+  if (alertCount > 0) {
+    const names = DATA.filter(d=>d.status==='danger').map(d=>d.name).join('、');
+    bannerWrap.innerHTML = `
+      <div class="alert-banner">
+        <span class="alert-icon">⚠</span>
+        <div>
+          <strong>要注意工事 ${alertCount}件：</strong>
+          原価率が受注時想定を ${ALERT_THRESHOLD}pt 以上超過しています。
+          対象：${names}
+        </div>
+      </div>`;
+  }
+
+  // KPI
+  const totalContract = DATA.reduce((s,d)=>s+d.contractAmount,0);
+  const totalActual   = DATA.reduce((s,d)=>s+d.totalActual,0);
+  const avgActualRate = totalActual / totalContract;
+  document.getElementById('kpi-grid').innerHTML = `
+    <div class="kpi-card">
+      <div class="kpi-label">施工中工事</div>
+      <div class="kpi-value">${DATA.length}<span style="font-size:14px;font-weight:400;color:var(--muted)"> 件</span></div>
+      <div class="kpi-sub">年間計画 約80件</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">受注金額合計</div>
+      <div class="kpi-value" style="font-size:20px">${fmt(totalContract)}<span style="font-size:12px;font-weight:400;color:var(--muted)">千円</span></div>
+      <div class="kpi-sub">対象3工事合計</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">平均発生原価率</div>
+      <div class="kpi-value ${avgActualRate>0.8?'danger':avgActualRate>0.7?'warn':'ok'}">${fmtP(avgActualRate)}</div>
+      <div class="kpi-sub">受注金額比</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">アラート工事</div>
+      <div class="kpi-value ${alertCount>0?'danger':'ok'}">${alertCount}<span style="font-size:14px;font-weight:400;color:var(--muted)"> 件</span></div>
+      <div class="kpi-sub">閾値超過（+${ALERT_THRESHOLD}pt以上）</div>
+    </div>`;
+
+  // Project cards
+  const list = document.getElementById('project-list');
+  list.innerHTML = DATA.map(d => {
+    const budgetConsumption = d.totalActual / d.totalBudget;
+    const fillCls = fillClass(d.status);
+    const detailRows = d.breakdown.map(r=>{
+      const diff = r.actual - r.budget;
+      const diffRate = diff / r.budget * 100;
+      const dc = diffClass(diffRate);
+      return `<tr>
+        <td>${r.cat}</td>
+        <td class="r">${fmt(r.budget)}</td>
+        <td class="r">${fmt(r.actual)}</td>
+        <td class="r"><span class="diff-pill ${dc}">${diff>=0?'+':''}${fmt(diff)}</span></td>
+        <td class="r"><span class="diff-pill ${dc}">${fmtPt(diffRate)}</span></td>
+        <td>${r.vendors.map(v=>v.name).join('、')}</td>
+      </tr>`;
+    }).join('');
+    const totalDiff = d.totalActual - d.totalBudget;
+    const totalDiffRate = totalDiff / d.totalBudget * 100;
+    const tdc = diffClass(totalDiffRate);
+
+    return `
+    <div class="project-card ${cardClass(d.status)}" id="card-${d.id}">
+      <div class="card-header" onclick="toggleDetail('${d.id}')">
+        <span class="card-status-badge ${statusClass(d.status)}">${statusLabel(d.status)}</span>
+        <div class="card-info">
+          <div class="card-title">${d.id}　${d.name}</div>
+          <div class="card-meta">
+            <span>${d.branch}</span>
+            <span>${d.manager}</span>
+            <span>${d.start} 〜 ${d.end}</span>
+          </div>
+        </div>
+        <div class="card-numbers">
+          <div class="num-block">
+            <div class="num-label">受注金額</div>
+            <div class="num-val">${fmt(d.contractAmount)}</div>
+          </div>
+          <div class="num-block">
+            <div class="num-label">実行予算</div>
+            <div class="num-val">${fmt(d.totalBudget)}</div>
+          </div>
+          <div class="num-block">
+            <div class="num-label">発生原価</div>
+            <div class="num-val">${fmt(d.totalActual)}</div>
+          </div>
+          <div class="num-block">
+            <div class="num-label">原価率（差異）</div>
+            <div class="num-val ${d.status==='danger'?'highlight-danger':d.status==='warn'?'highlight-warn':''}">${fmtP(d.actualRate)} <span style="font-size:12px">(${fmtPt(d.alertDiff)})</span></div>
+          </div>
+        </div>
+        <span class="card-chevron">▶</span>
+      </div>
+      <div class="progress-row">
+        <span class="progress-label">予算消化率</span>
+        <div class="progress-track">
+          <div class="progress-fill ${fillCls}" style="width:${Math.min(budgetConsumption*100,100).toFixed(1)}%"></div>
+        </div>
+        <span class="progress-pct ${fillCls.replace('fill-','').replace('danger','').replace('warn','').replace('ok','')}" 
+              style="color:${d.status==='danger'?'var(--red)':d.status==='warn'?'var(--amber)':'var(--green)'}">${(budgetConsumption*100).toFixed(1)}%</span>
+      </div>
+      <div class="card-detail" id="detail-${d.id}">
+        <div class="detail-inner">
+          <div class="detail-title">工種別　実行予算 vs 発生原価（千円）</div>
+          <table class="data-table">
+            <thead><tr>
+              <th>工種</th>
+              <th class="r">実行予算</th>
+              <th class="r">発生原価</th>
+              <th class="r">差異</th>
+              <th class="r">差異率</th>
+              <th>担当協力会社</th>
+            </tr></thead>
+            <tbody>
+              ${detailRows}
+              <tr class="total-row">
+                <td>合計</td>
+                <td class="r">${fmt(d.totalBudget)}</td>
+                <td class="r">${fmt(d.totalActual)}</td>
+                <td class="r"><span class="diff-pill ${tdc}">${totalDiff>=0?'+':''}${fmt(totalDiff)}</span></td>
+                <td class="r"><span class="diff-pill ${tdc}">${fmtPt(totalDiffRate)}</span></td>
+                <td>—</td>
+              </tr>
+            </tbody>
+          </table>
+          ${renderBarChart(d)}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleDetail(id) {
+  const detail = document.getElementById('detail-' + id);
+  const header = detail.previousElementSibling.previousElementSibling; // progress-row before detail
+  // find card-header
+  const card = document.getElementById('card-' + id);
+  const hdr  = card.querySelector('.card-header');
+  const isOpen = detail.classList.contains('open');
+  detail.classList.toggle('open', !isOpen);
+  hdr.classList.toggle('open', !isOpen);
+}
+
+function renderBarChart(d) {
+  const W = 460, ROW = 30, PAD = 120, BAR_MAX = W - PAD - 40;
+  const maxAbs = Math.max(...d.breakdown.map(r=>Math.abs(r.actual - r.budget)/r.budget*100), 1);
+  const midX = PAD + BAR_MAX / 2;
+  const rows = d.breakdown.map((r, i) => {
+    const pct = (r.actual - r.budget) / r.budget * 100;
+    const norm = Math.abs(pct) / maxAbs;
+    const barW = norm * (BAR_MAX / 2);
+    const isOver = pct >= 0;
+    const color = pct > 5 ? 'var(--red)' : pct < -5 ? 'var(--green)' : 'var(--amber)';
+    const barX = isOver ? midX : midX - barW;
+    const y = i * ROW + 10;
+    return `
+      <text x="${PAD - 6}" y="${y + 10}" text-anchor="end" font-size="12" fill="var(--text)" font-family="var(--sans)">${r.cat}</text>
+      <rect x="${barX}" y="${y}" width="${barW}" height="16" fill="${color}" opacity=".8" rx="2"/>
+      <text x="${isOver ? midX + barW + 4 : midX - barW - 4}" y="${y + 11}" 
+            text-anchor="${isOver ? 'start':'end'}" font-size="11" fill="${color}" font-family="var(--mono)" font-weight="600">
+        ${fmtPt(pct)}
+      </text>`;
+  }).join('');
+  const h = d.breakdown.length * ROW + 20;
+  return `
+    <div class="chart-wrap">
+      <div class="chart-label">工種別　差異率チャート</div>
+      <svg width="100%" viewBox="0 0 ${W} ${h}" style="overflow:visible">
+        <line x1="${midX}" y1="0" x2="${midX}" y2="${h}" stroke="var(--border)" stroke-width="1.5"/>
+        <text x="${midX}" y="${h+14}" text-anchor="middle" font-size="10" fill="var(--muted)" font-family="var(--sans)">±0%（基準）</text>
+        ${rows}
+      </svg>
+    </div>`;
+}
+
+/* ================================================================
+   TAB 2 — 工種別内訳
+   ================================================================ */
+function renderBreakdownSelect() {
+  const sel = document.getElementById('proj-select');
+  DATA.forEach(d => {
+    const opt = document.createElement('option');
+    opt.value = d.id;
+    opt.textContent = `${d.id}　${d.name}`;
+    sel.appendChild(opt);
+  });
+  sel.addEventListener('change', () => renderBreakdown(sel.value));
+  renderBreakdown(DATA[0].id);
+}
+
+function renderBreakdown(id) {
+  const d = DATA.find(p=>p.id===id);
+  const cont = document.getElementById('breakdown-content');
+
+  const rows = [...d.breakdown]
+    .sort((a,b) => Math.abs(b.actual-b.budget)/b.budget - Math.abs(a.actual-a.budget)/a.budget)
+    .map(r => {
+      const diff = r.actual - r.budget;
+      const diffR = diff / r.budget * 100;
+      const dc = diffClass(diffR);
+      return `<tr>
+        <td><strong>${r.cat}</strong></td>
+        <td class="r">${fmt(r.budget)}</td>
+        <td class="r">${fmt(r.actual)}</td>
+        <td class="r"><span class="diff-pill ${dc}">${diff>=0?'+':''}${fmt(diff)}</span></td>
+        <td class="r"><span class="diff-pill ${dc}">${fmtPt(diffR)}</span></td>
+        <td>${r.vendors.map(v=>`${v.name}（支払済: ${fmt(v.paid)}千円）`).join('<br>')}</td>
+      </tr>`;
+    }).join('');
+
+  const totalDiff = d.totalActual - d.totalBudget;
+  const totalDiffR = totalDiff / d.totalBudget * 100;
+  const tdc = diffClass(totalDiffR);
+
+  cont.innerHTML = `
+    <div class="section-card">
+      <div class="section-title">
+        <span class="card-status-badge ${statusClass(d.status)}" style="font-size:11px">${statusLabel(d.status)}</span>
+        ${d.id}　${d.name}　— 工種別差異明細
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:16px">
+        受注金額：${fmtK(d.contractAmount)}　／　実行予算：${fmtK(d.totalBudget)}　／　
+        発生原価：${fmtK(d.totalActual)}　／　
+        <strong style="color:${d.status==='danger'?'var(--red)':d.status==='warn'?'var(--amber)':'var(--green)'}">
+          原価率：${fmtP(d.actualRate)}（受注時想定比 ${fmtPt(d.alertDiff)}）
+        </strong>
+        ${d.status==='danger'?`<span style="color:var(--red);font-weight:600;margin-left:8px">⚠ 閾値（+${ALERT_THRESHOLD}pt）超過</span>`:''}
+      </div>
+      <table class="data-table">
+        <thead><tr>
+          <th>工種</th>
+          <th class="r">実行予算（千円）</th>
+          <th class="r">発生原価（千円）</th>
+          <th class="r">差異（千円）</th>
+          <th class="r">差異率</th>
+          <th>担当協力会社（支払状況）</th>
+        </tr></thead>
+        <tbody>
+          ${rows}
+          <tr class="total-row">
+            <td>合計</td>
+            <td class="r">${fmt(d.totalBudget)}</td>
+            <td class="r">${fmt(d.totalActual)}</td>
+            <td class="r"><span class="diff-pill ${tdc}">${totalDiff>=0?'+':''}${fmt(totalDiff)}</span></td>
+            <td class="r"><span class="diff-pill ${tdc}">${fmtPt(totalDiffR)}</span></td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+      ${renderBarChart(d)}
+    </div>`;
+}
+
+/* ================================================================
+   TAB 3 — 協力会社別
+   ================================================================ */
+function buildVendorData() {
+  const map = {};
+  DATA.forEach(proj => {
+    proj.breakdown.forEach(row => {
+      row.vendors.forEach(v => {
+        const key = `${v.name}__${row.cat}`;
+        if (!map[key]) map[key] = { name: v.name, cat: row.cat, projects:[], ordered:0, paid:0 };
+        map[key].projects.push(proj.id);
+        map[key].ordered += row.actual;
+        map[key].paid    += v.paid;
+      });
+    });
+  });
+  return Object.values(map).sort((a,b)=>b.ordered-a.ordered);
+}
+
+const VENDOR_DATA = buildVendorData();
+
+function renderVendorFilters() {
+  const vp = document.getElementById('vendor-proj');
+  const vc = document.getElementById('vendor-cat');
+  DATA.forEach(d => {
+    const o = document.createElement('option');
+    o.value = d.id; o.textContent = d.name;
+    vp.appendChild(o);
+  });
+  const cats = [...new Set(VENDOR_DATA.map(v=>v.cat))];
+  cats.forEach(c => {
+    const o = document.createElement('option');
+    o.value = c; o.textContent = c;
+    vc.appendChild(o);
+  });
+  vp.addEventListener('change', renderVendorTable);
+  vc.addEventListener('change', renderVendorTable);
+  renderVendorTable();
+}
+
+function renderVendorTable() {
+  const projFilter = document.getElementById('vendor-proj').value;
+  const catFilter  = document.getElementById('vendor-cat').value;
+  let rows = VENDOR_DATA;
+  if (projFilter !== 'ALL') rows = rows.filter(v => v.projects.includes(projFilter));
+  if (catFilter  !== 'ALL') rows = rows.filter(v => v.cat === catFilter);
+
+  const totalOrdered = rows.reduce((s,r)=>s+r.ordered,0);
+  const totalPaid    = rows.reduce((s,r)=>s+r.paid,0);
+
+  const tbody = document.getElementById('vendor-tbody');
+  tbody.innerHTML = rows.map(v => {
+    const remain = v.ordered - v.paid;
+    const payRate = v.paid / v.ordered;
+    return `<tr>
+      <td><strong>${v.name}</strong></td>
+      <td>${v.cat}</td>
+      <td class="r">${fmt(v.ordered)}</td>
+      <td class="r">${fmt(v.paid)}</td>
+      <td class="r" style="color:${remain>0?'var(--amber)':'var(--muted)'}">${fmt(remain)}</td>
+      <td class="r">
+        <div style="display:flex;align-items:center;gap:8px;justify-content:flex-end">
+          <div style="width:60px;height:6px;background:var(--border);border-radius:3px;overflow:hidden">
+            <div style="width:${(payRate*100).toFixed(1)}%;height:100%;background:${payRate<0.5?'var(--amber)':'var(--green)'};border-radius:3px"></div>
+          </div>
+          <span style="font-family:var(--mono);font-size:12px">${(payRate*100).toFixed(1)}%</span>
+        </div>
+      </td>
+    </tr>`;
+  }).join('') + `
+    <tr class="total-row">
+      <td colspan="2">合計</td>
+      <td class="r">${fmt(totalOrdered)}</td>
+      <td class="r">${fmt(totalPaid)}</td>
+      <td class="r">${fmt(totalOrdered-totalPaid)}</td>
+      <td class="r" style="font-family:var(--mono)">${(totalPaid/totalOrdered*100).toFixed(1)}%</td>
+    </tr>`;
+}
+
+/* ================================================================
+   TAB SWITCHING
+   ================================================================ */
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.tab).classList.add('active');
+  });
+});
+
+/* ================================================================
+   INIT
+   ================================================================ */
+renderOverview();
+renderBreakdownSelect();
+renderVendorFilters();
+</script>
+</body>
+</html>

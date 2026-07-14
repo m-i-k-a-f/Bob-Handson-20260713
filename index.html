@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IBM Bob ハンズオン｜ワトソン建設 提案準備シミュレーション</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --b10:#EDF5FF; --b20:#D0E2FF; --b30:#A6C8FF; --b40:#78A9FF; --b50:#4589FF;
+  --b60:#0F62FE; --b70:#0043CE; --b80:#002D9C; --b90:#001D6C; --b100:#001141;
+  --g10:#F4F4F4; --g20:#E0E0E0; --g30:#C6C6C6; --g40:#A8A8A8; --g50:#8D8D8D;
+  --g60:#6F6F6F; --g70:#525252; --g80:#393939; --g90:#262626; --g100:#161616;
+  --white:#FFFFFF;
+  --sans:'IBM Plex Sans JP',system-ui,sans-serif;
+  --mono:'IBM Plex Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);color:var(--g100);background:var(--white);line-height:1.7;font-size:15px}
+
+/* ---- layout ---- */
+.wrap{display:flex;min-height:100vh}
+nav{width:280px;flex-shrink:0;background:var(--g100);color:var(--white);position:sticky;top:0;height:100vh;overflow-y:auto;padding:32px 0}
+nav .brand{padding:0 24px 24px;border-bottom:1px solid var(--g80)}
+nav .brand .sq{width:20px;height:20px;background:var(--b60);margin-bottom:12px}
+nav .brand h1{font-size:15px;font-weight:600;line-height:1.4}
+nav .brand p{font-size:11px;color:var(--g40);margin-top:6px}
+nav ul{list-style:none;padding:16px 0}
+nav li a{display:block;padding:9px 24px;color:var(--g30);text-decoration:none;font-size:13px;border-left:3px solid transparent}
+nav li a:hover{background:var(--g90);color:var(--white)}
+nav li a.sub{padding-left:40px;font-size:12px;color:var(--g50)}
+nav li a.act{border-left-color:var(--b50);color:var(--white);background:var(--g90)}
+nav .prog{padding:16px 24px;border-top:1px solid var(--g80);margin-top:16px}
+nav .prog .ptop{display:flex;justify-content:space-between;align-items:baseline}
+nav .prog .bar{height:6px;background:var(--g80);margin-top:8px}
+nav .prog .fill{height:100%;background:var(--b50);width:0%;transition:width .25s}
+nav .prog #pt{font-size:11px;color:var(--g40)}
+nav .prog #pp{font-family:var(--mono);font-size:15px;font-weight:600;color:var(--b40)}
+nav .prog #preset{margin-top:12px;width:100%;background:none;border:1px solid var(--g70);color:var(--g40);
+  padding:6px;font-family:var(--sans);font-size:11px;cursor:pointer}
+nav .prog #preset:hover{border-color:var(--g50);color:var(--g30)}
+nav li a .cnt{float:right;font-family:var(--mono);font-size:10px;color:var(--g60)}
+nav li a .cnt.full{color:var(--b40)}
+main{flex:1;min-width:0;padding:0 0 120px}
+.inner{max-width:900px;padding:0 48px}
+
+/* ---- hero ---- */
+.hero{background:var(--g100);color:var(--white);padding:56px 48px 48px;margin-bottom:48px}
+.hero .sq{width:24px;height:24px;background:var(--b60);margin-bottom:20px}
+.hero h1{font-size:38px;font-weight:600;line-height:1.25;letter-spacing:-.5px}
+.hero .lead{font-size:17px;color:var(--b40);margin-top:14px}
+.hero code{background:var(--g80);color:var(--b30)}
+.hero .meta{margin-top:28px;padding-top:20px;border-top:1px solid var(--g80);font-size:13px;color:var(--g30);display:flex;gap:32px;flex-wrap:wrap}
+.hero .meta b{color:var(--white);font-weight:500}
+
+/* ---- typography ---- */
+h2{font-size:28px;font-weight:600;margin:56px 0 8px;padding-top:16px;letter-spacing:-.3px}
+h2 .no{font-family:var(--mono);font-size:14px;color:var(--b60);display:block;margin-bottom:6px;font-weight:600}
+h3{font-size:19px;font-weight:600;margin:36px 0 12px}
+h4{font-size:15px;font-weight:600;margin:24px 0 8px}
+p{margin:12px 0}
+.sub{color:var(--g70);font-size:14px;margin-bottom:24px}
+strong{font-weight:600}
+a{color:var(--b70)}
+
+/* ---- components ---- */
+.card{background:var(--g10);padding:20px 24px;margin:20px 0}
+.card.blue{background:var(--b10)}
+.card.dark{background:var(--g100);color:var(--white)}
+.card.dark h4{color:var(--b40)}
+.card.dark code{background:var(--g80);color:var(--b30)}
+.card.dark b{color:var(--white)}
+.card h4{margin-top:0}
+
+.goal{background:var(--b10);padding:20px 24px;margin:20px 0;font-size:14px}
+.goal b{color:var(--b80)}
+
+.note{border-left:3px solid var(--b60);background:var(--g10);padding:14px 20px;margin:20px 0;font-size:14px}
+.warn{border-left:3px solid var(--g70);background:var(--g10);padding:14px 20px;margin:20px 0;font-size:14px}
+
+table{width:100%;border-collapse:collapse;margin:20px 0;font-size:14px}
+th{background:var(--g100);color:var(--white);text-align:left;padding:11px 14px;font-weight:600;font-size:13px}
+td{padding:11px 14px;border:1px solid var(--g20);vertical-align:top}
+tr:nth-child(even) td{background:var(--g10)}
+td.mono{font-family:var(--mono);font-size:13px}
+td.hl{background:var(--b10)!important;font-weight:600;color:var(--b80)}
+
+/* ---- steps ---- */
+.step{border:1px solid var(--g20);margin:24px 0}
+.step-h{display:flex;align-items:center;gap:16px;padding:16px 20px;background:var(--g10);border-bottom:1px solid var(--g20)}
+.step-h .n{font-family:var(--mono);font-weight:600;color:var(--b60);font-size:15px;flex-shrink:0}
+.step-h .t{font-weight:600;font-size:15px;flex:1}
+.step-h .time{font-family:var(--mono);font-size:12px;color:var(--g60);flex-shrink:0}
+.step-b{padding:20px}
+.step-b > :first-child{margin-top:0}
+
+/* ---- prompt block ---- */
+.pr{margin:16px 0;border:1px solid var(--g20)}
+.pr-h{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;background:var(--g100);color:var(--white)}
+.pr-h .lbl{font-size:11px;font-family:var(--mono);color:var(--b40);letter-spacing:.5px}
+.pr-h button{background:var(--b60);color:#fff;border:0;padding:5px 12px;font-family:var(--sans);font-size:11px;font-weight:500;cursor:pointer}
+.pr-h button:hover{background:var(--b70)}
+.pr-h button.done{background:var(--g70)}
+pre{background:var(--g10);padding:16px;overflow-x:auto;font-family:var(--mono);font-size:12.5px;line-height:1.65;white-space:pre-wrap;word-break:break-word}
+code{font-family:var(--mono);font-size:.9em;background:var(--g10);padding:2px 5px}
+pre code{background:none;padding:0;font-size:inherit}
+
+/* ---- checklist ---- */
+.chk{list-style:none;margin:16px 0}
+.chk li{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--g20);font-size:14px}
+.chk input{width:16px;height:16px;margin-top:3px;accent-color:var(--b60);flex-shrink:0;cursor:pointer}
+.chk li.on{color:var(--g50);text-decoration:line-through}
+
+/* ---- grid ---- */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:20px 0}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin:20px 0}
+.tile{background:var(--g10);padding:18px}
+.tile .k{font-family:var(--mono);font-size:12px;color:var(--b60);font-weight:600;margin-bottom:6px}
+.tile .v{font-weight:600;font-size:14px;margin-bottom:6px}
+.tile .d{font-size:12.5px;color:var(--g70);line-height:1.6}
+
+/* ---- flow ---- */
+.flow{display:flex;align-items:stretch;gap:0;margin:24px 0;flex-wrap:wrap}
+.flow .f{flex:1;min-width:150px;background:var(--g10);padding:16px;border-right:2px solid var(--white)}
+.flow .f:last-child{border-right:0;background:var(--b10)}
+.flow .f .s{font-family:var(--mono);font-size:11px;color:var(--b60);font-weight:600}
+.flow .f .l{font-weight:600;font-size:13.5px;margin-top:4px}
+.flow .f .m{font-size:11.5px;color:var(--g70);margin-top:4px}
+
+.mode{display:inline-block;font-family:var(--mono);font-size:11px;font-weight:600;padding:3px 9px;background:var(--b60);color:#fff;margin-right:6px}
+.mode.ask{background:var(--g70)}
+.mode.plan{background:var(--b80)}
+
+hr{border:0;border-top:1px solid var(--g20);margin:48px 0}
+
+@media(max-width:960px){
+  nav{display:none}
+  .inner,.hero{padding-left:24px;padding-right:24px}
+  .grid2,.grid3{grid-template-columns:1fr}
+}
+@media print{
+  nav{display:none}
+  .pr-h button{display:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<nav>
+  <div class="brand">
+    <div class="sq"></div>
+    <h1>IBM Bob ハンズオン</h1>
+    <p>ワトソン建設 提案準備シミュレーション</p>
+  </div>
+  <ul>
+    <li><a href="#story">シナリオと進行</a></li>
+    <li><a href="#step0">STEP 0｜環境セットアップ</a></li>
+    <li><a href="#lab1">Lab 1｜RFPを読む</a></li>
+    <li><a href="#lab2">Lab 2｜動くモックを作る</a></li>
+    <li><a href="#lab3">Lab 3｜実データを分析する</a></li>
+    <li><a href="#wrap">まとめ</a></li>
+    <li><a href="#prompts">付録A｜プロンプト集</a></li>
+    <li><a href="#trouble">付録B｜困ったとき</a></li>
+  </ul>
+  <div class="prog">
+    <div class="ptop"><span id="pt">進捗</span><span id="pp">0%</span></div>
+    <div class="bar"><div class="fill" id="pf"></div></div>
+    <button id="preset" type="button">チェックをリセット</button>
+  </div>
+</nav>
+
+<main>
+
+<div class="hero">
+  <div class="sq"></div>
+  <h1>クライアントの提案準備を、<br>一気に一周する</h1>
+  <div class="lead">IBM Bob ハンズオン｜ワトソン建設 工事原価管理システム刷新</div>
+  <div class="meta">
+    <span><b>形式</b> 個人ワーク（隣と相談OK）</span>
+    <span><b>ツール</b> IBM Bob</span>
+    <span><b>実施</b> 日本アイ・ビー・エム</span>
+  </div>
+</div>
+
+<div class="inner">
+
+<!-- ============ STORY ============ -->
+<section id="story">
+<h2><span class="no">SCENARIO</span>あなたの立場と、今日やること</h2>
+
+<div class="card dark">
+<h4>状況</h4>
+<p style="margin-bottom:0">あなたは、中堅ゼネコン <b>ワトソン建設株式会社</b>（年商185億円・従業員520名）から届いた RFP の提案チームにアサインされた。テーマは「工事原価管理システムの刷新」。提案期限まで1か月。今日はキックオフの日で、上司からこう言われている。</p>
+<p style="margin:14px 0 0;font-size:17px;color:var(--b40);font-weight:500">「明日の初回訪問までに、聞くべきことを整理しておいて。あと、何か"刺さるもの"があると助かる」</p>
+</div>
+
+<p>これは、コンサルタントが毎回やっている仕事です。<b>従来なら2週間かかります。</b>今日はこれを、IBM Bob を使って一つのセッションで一周します。</p>
+
+<div class="flow">
+  <div class="f"><div class="s">LAB 1</div><div class="l">RFPを読む</div><div class="m">要件を構造化し、<br>矛盾を洗い出す</div></div>
+  <div class="f"><div class="s">LAB 2</div><div class="l">動くモックを作る</div><div class="m">要件を、触れる画面に<br>変換する</div></div>
+  <div class="f"><div class="s">LAB 3</div><div class="l">実データを分析する</div><div class="m">RFPに書かれていない<br>本当の課題を見つける</div></div>
+</div>
+
+<div class="goal">
+<b>今日の裏テーマ。</b> Lab 3 で、あなたはクライアント自身が気づいていない課題を発見します。RFPには「システムが古い」としか書かれていません。しかし実データを見ると、<b>ある工事が赤字転落寸前</b>で、<b>その原因が別のファイルに書いてある</b>。それを見つけて初回訪問に持っていけるかどうかが、提案の勝敗を分けます。
+</div>
+
+<h3>今日の構成</h3>
+<table>
+<tr><th style="width:70px">　</th><th>内容</th><th style="width:230px">成果物</th></tr>
+<tr><td class="mono">STEP 0</td><td>サインインと環境確認</td><td>Bobが動く状態</td></tr>
+<tr><td class="mono">LAB 1</td><td>RFPを読み、要件と論点を出す</td><td class="mono">requirements.html<br>issues.html</td></tr>
+<tr><td class="mono">LAB 2</td><td>要件から動くモックを作る</td><td class="mono">mockup/index.html<br>design.html</td></tr>
+<tr><td class="mono">LAB 3</td><td>共有フォルダを分析する</td><td class="mono">findings.html<br>report.html</td></tr>
+<tr><td class="mono">WRAP</td><td>まとめ・持ち帰り</td><td>—</td></tr>
+</table>
+
+<div class="note">
+<b>完走できなくても大丈夫です。</b> 各Labは独立して意味があります。詰まったら手を挙げてください。IBM側のスタッフが回ります。
+</div>
+
+<div class="card">
+<h4>今日のルール：成果物の形式は、読み手で決める</h4>
+<p style="margin-bottom:0">AI駆動開発では、つい何でも Markdown（<code>.md</code>）で作らせがちです。しかし <b>Markdown は開発者向けの形式</b>です。クライアントや上司に <code>.md</code> ファイルを送りつけても読んでもらえません。<br><br>
+<b>人が読むもの（要件書・論点リスト・分析レポート・設計書）は HTML で作らせます。</b>ブラウザで開くだけで、整形された状態で読めます。<br>
+<b>Bobへの入力になるもの（仕様書・再実行用の手順書）だけ Markdown にします。</b>これはAIが読むファイルなので、それでいい。<br><br>
+この使い分けを、今日は最初から徹底します。</p>
+</div>
+</section>
+
+<hr>
+
+<!-- ============ STEP 0 ============ -->
+<section id="step0">
+<h2><span class="no">STEP 0</span>サインインと環境確認</h2>
+<p class="sub">IBM Bob はお渡しした端末にインストール済みです。アカウントもお持ちの前提で進めます。</p>
+
+<div class="step">
+  <div class="step-h"><span class="n">0-1</span><span class="t">IBM Bob にログインする</span></div>
+  <div class="step-b">
+    <ol style="margin:0 0 16px 20px;font-size:14px;line-height:2">
+      <li><b>IBM Bob</b> を起動します。</li>
+      <li>起動画面の <b>「Login to Bob」</b> をクリックします。</li>
+      <li>認証用のサイトに遷移します。表示されたリンクを<b>開いて</b>ください。</li>
+      <li>ブラウザでログインが完了すると、Bob 側が自動的に認証済みの状態になります。</li>
+    </ol>
+    <ul class="chk">
+      <li><input type="checkbox"><span>ログインが完了し、チャット入力欄が使える状態になっている</span></li>
+    </ul>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-h"><span class="n">0-2</span><span class="t">教材フォルダを開く</span></div>
+  <div class="step-b">
+    <p>配布された <code>DTC_Bob_Handson_20260713</code> フォルダを、<b>フォルダごと</b> Bob で開きます（<b>Open Folder</b>）。</p>
+    <pre>DTC_Bob_Handson_20260713/
+├── index.html                    ← この手順書
+├── lab1-rfp/
+│   ├── 01_RFP_工事原価管理システム刷新.pptx
+│   └── 02_RFP別紙_要件一覧.xlsx
+└── lab3-shared-folder/           ← ワトソン建設の共有フォルダ（散らかっている）
+    ├── 00_README_注意.txt
+    ├── 01_営業（SFA・CRM）/
+    ├── 02_工事（プロジェクト別）/
+    ├── 03_会計・ERP/
+    ├── 04_購買・資材/
+    ├── 05_経営企画/
+    ├── 06_IT（Apptio）/
+    └── 99_その他/</pre>
+    <div class="note">
+      <b>なぜフォルダごと開くのか。</b> Bob は「開いているフォルダ」を作業コンテキストとして認識します。ファイル単体を開いただけでは、Bob は隣のファイルを読めません。<b>コンテキストを与えることが、AI駆動開発の第一歩です。</b>
+    </div>
+    <ul class="chk">
+      <li><input type="checkbox"><span>Bob のファイル一覧に上記の構成が見えている</span></li>
+    </ul>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-h"><span class="n">0-3</span><span class="t">3つのモードを知る</span></div>
+  <div class="step-b">
+    <p>Bob の入力欄の上に、モード切替があります。<b>今日はこの3つを使い分けます。</b></p>
+    <div class="grid3">
+      <div class="tile"><div class="k">ASK</div><div class="v">聞く・分析する</div><div class="d">ファイルを変更しない。読んで、理解して、答える。<b>ただし読めるファイル形式に制限がある。</b></div></div>
+      <div class="tile"><div class="k">PLAN</div><div class="v">計画を立てる</div><div class="d">実装前に方針を立てる。ここで人間が方向性を修正できる。<b>手戻りを防ぐ。</b></div></div>
+      <div class="tile"><div class="k">AGENT</div><div class="v">実行する</div><div class="d">ファイルを作る・書き換える。ツールを使える。<b>今日はほぼこれを使います。</b></div></div>
+    </div>
+    <div class="note">
+      <b>実務上の注意。</b> ASKモードは <code>.pptx</code> や <code>.xlsx</code> を「参照対象外」として弾くことがあります。<b>Officeファイルを扱うときは AGENT モードを使ってください。</b>AGENTならPythonでファイルを開いて中身を読めるからです。今日の演習では、原則すべて AGENT モードで進めます。
+    </div>
+    <p><b>疎通確認。</b> <span class="mode">AGENT</span> モードで、以下をそのまま貼り付けて送信してください。</p>
+    <div class="pr">
+      <div class="pr-h"><span class="lbl">AGENT MODE — 疎通確認</span><button onclick="cp(this)">コピー</button></div>
+      <pre>このフォルダの構成を説明して。どんなファイルがあって、それぞれ何のためのものか、推測でいいので教えて。ファイルはまだ作らなくていい。</pre>
+    </div>
+    <ul class="chk">
+      <li><input type="checkbox"><span>Bob がフォルダの中身を説明できた</span></li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<hr>
+
+<!-- ============ LAB 1 ============ -->
+<section id="lab1">
+<h2><span class="no">LAB 1</span>RFPを読み、聞くべきことを出す</h2>
+<p class="sub">従来2〜3日かかっていた工程です。今日は25分でやります。</p>
+
+<div class="goal">
+<b>このLabのゴール。</b> RFP本文（PowerPoint）と別紙（Excel）から、① 構造化された要件一覧、② <b>矛盾候補・確認事項リスト</b> の2つを生成します。<br>
+<b>本当の学び：</b> Bob は矛盾を「候補」として提示します。それが本当に矛盾なのか、クライアントに聞くべきかを判断するのは、あなたです。
+</div>
+
+<div class="step">
+  <div class="step-h"><span class="n">1-0</span><span class="t">まず、自分の目でRFPを読む</span></div>
+  <div class="step-b">
+    <p><b>Bobを開く前に、まず自分で読んでください。</b></p>
+    <ul class="chk" style="margin-top:0">
+      <li><input type="checkbox"><span><code>lab1-rfp/01_RFP_工事原価管理システム刷新.pptx</code> を開いて通読した（全7ページ）</span></li>
+      <li><input type="checkbox"><span><code>lab1-rfp/02_RFP別紙_要件一覧.xlsx</code> を開いて、5つのシートをざっと見た</span></li>
+    </ul>
+    <div class="card blue">
+      <h4>読みながら、この3つを頭に置いてください</h4>
+      <p style="margin-bottom:0">
+      ① <b>このクライアントは、本当は何に困っているのか。</b>「システムが古い」は症状であって、原因ではない。<br>
+      ② <b>本文と別紙で、言っていることが食い違っている箇所はないか。</b>（あります）<br>
+      ③ <b>このスケジュールは、そもそも成立するのか。</b>
+      </p>
+    </div>
+    <div class="note">
+      <b>なぜ先に自分で読むのか。</b> AIの出力を評価できるのは、自分が中身を分かっているときだけです。読まずにBobに投げると、それらしい出力を鵜呑みにするしかなくなります。<b>ここを飛ばさないでください。今日いちばん重要な工程です。</b>
+    </div>
+    <ul class="chk">
+      <li><input type="checkbox"><span>「引っかかる点」を、自分の頭で最低1つ見つけた</span></li>
+    </ul>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-h"><span class="n">1-1</span><span class="t">Bobに全体像を出させて、答え合わせする</span></div>
+  <div class="step-b">
+    <p><span class="mode">AGENT</span> モードで実行します。</p>
+    <div class="pr">
+      <div class="pr-h"><span class="lbl">AGENT MODE</span><button onclick="cp(this)">コピー</button></div>
+      <pre>@lab1-rfp/01_RFP_工事原価管理システム刷新.pptx と @lab1-rfp/02_RFP別紙_要件一覧.xlsx の中身を読んで、以下を教えて。ファイルはまだ作らなくていい。
+
+1. このクライアントは何に困っているのか（3行で）
+2. このRFPの真のゴールは何か
+3. 提案する側として、最初に確認すべき「引っかかる点」を5つ
+
+コンサルタントが初回訪問前に読む前提で、簡潔に。</pre>
+    </div>
+    <div class="note">
+      <code>@</code> を打つとファイル候補が出ます。<b>これが「コンテキストを渡す」操作です。</b>渡さなければBobは何も知りません。<br>
+      Officeファイルを読むので <b>AGENT モード</b>で実行してください（ASKモードだと「参照対象外」と言われます）。
+    </div>
+    <p><b>1-0 で自分が見つけた「引っかかる点」は、Bobの5つの中に入っていましたか？</b></p>
+    <ul class="chk">
+      <li><input type="checkbox"><span>自分の気づきとBobの出力を突き合わせた</span></li>
+    </ul>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-h"><span class="n">1-2</span><span class="t">要件を構造化する</span></div>
+  <div class="step-b">
+    <p><span class="mode">AGENT</span> モードに切り替えます。ここで初めてファイルを作ります。</p>
+    <div class="pr">
+      <div class="pr-h"><span class="lbl">AGENT MODE</span><button onclick="cp(this)">コピー</button></div>
+      <pre>@lab1-rfp/01_RFP_工事原価管理システム刷新.pptx と @lab1-rfp/02_RFP別紙_要件一覧.xlsx の全内容を読み、構造化した要件一覧を requirements.html として作成して。
+
+【構成】
+1. プロジェクト概要（背景・目的・スコープ）
+2. 機能要件（要件IDごとに表形式。出典が本文か別紙かを明記）
+3. 非機能要件（同上）
+4. 制約条件（スケジュール・予算・体制）
+5. 前提として不明な点
+
+【ルール】
+- 要件ごとに「出典（本文 p.X / 別紙シート名）」の列を必ず入れる
+- RFPに書いていないことは推測せず「記載なし」と書く
+- 日本語で、コンサルタントがそのままクライアントに見せられる粒度で
+
+【形式】
+- 単一のHTMLファイル（CSS内包）。ブラウザで開くだけで読めること
+- Markdownではなく HTML で作ること。クライアントに見せる資料だから
+- 色は青とグレーのみ。フォントは IBM Plex Sans JP</pre>
+    </div>
+    <p>生成された <code>requirements.html</code> をブラウザで開いて確認します。<b>出典列があるかを必ずチェックしてください。</b>これがないと、後でクライアントに「どこに書いてありました？」と聞かれて詰みます。</p>
+    <div class="note">
+      <b>なぜ .md ではなく .html なのか。</b> これはクライアントに見せる資料です。<code>.md</code> はエディタがないと整形されません。<b>読み手が誰かで、形式を決めてください。</b>
+    </div>
+    <ul class="chk">
+      <li><input type="checkbox"><span><code>requirements.html</code> がブラウザで開き、出典列がある</span></li>
+    </ul>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-h"><span class="n">1-3</span><span class="t">矛盾を炙り出す ← 今日のハイライト</span></div>
+  <div class="step-b">
+    <p>ここがコンサルの勝負どころです。<b>RFPは、たいてい矛盾しています。</b>それに初回訪問で気づけるかどうかで、信頼が決まります。</p>
+    <div class="pr">
+      <div class="pr-h"><span class="lbl">AGENT MODE</span><button onclick="cp(this)">コピー</button></div>
+      <pre>@lab1-rfp/01_RFP_工事原価管理システム刷新.pptx（本文）と @lab1-rfp/02_RFP別紙_要件一覧.xlsx（別紙）を突き合わせて、矛盾・不整合・確認が必要な点を洗い出し、issues.html として作成して。
+
+【観点】
+- 本文と別紙で、同じ要件について異なることを言っていないか
+- 数値（性能・可用性・閾値・期日）の食い違いはないか
+- スケジュールは、記載された工程を積み上げて物理的に成立するか
+- 「必須」と書かれているのに、実現手段が矛盾している要件はないか
+
+【出力形式】表形式で、列は以下：
+No / 論点 / 本文の記述 / 別紙の記述 / なぜ問題か / 深刻度(高·中·低) / クライアントへの確認文
+
+「クライアントへの確認文」は、そのまま質問票に転記できる丁寧な日本語で書いて。
+
+【形式】
+- 単一のHTMLファイル（CSS内包）。ブラウザで開くだけで読めること
+- 深刻度「高」の行は視覚的に目立たせること
+- 色は青とグレーのみ。フォントは IBM Plex Sans JP</pre>
+    </div>
+
+    <div class="card blue">
+      <h4>答え合わせ：最低でもこの5つは出るはずです</h4>
+      <table style="margin:12px 0 0">
+      <tr><th style="width:150px">論点</th><th>矛盾の中身</th></tr>
+      <tr><td><b>会計連携先</b></td><td>本文は「SAPとリアルタイム連携」、別紙は「弥生会計から月次CSV取込」。<b>連携先も頻度も違う。</b>ここを外すとアーキテクチャ全体が崩れる。</td></tr>
+      <tr><td><b>受注金額の正</b></td><td>本文は「Salesforceがマスタ」、別紙は「見積書（確定版）が正」。<b>マスタが2つある。</b>Lab 3 でこれが実害を出していることが判明します。</td></tr>
+      <tr><td><b>実行環境</b></td><td>本文は「パブリッククラウド可」、別紙は「国内オンプレミス必須（親会社方針）」。<b>提案の前提が真逆。</b></td></tr>
+      <tr><td><b>スケジュール</b></td><td>本文は「2027年4月1日 本番稼働（必達）」。別紙の工程を積み上げると <b>2028年9月</b>。1年半足りない。</td></tr>
+      <tr><td><b>可用性</b></td><td>本文「稼働率99.9%（計画停止含む）」。別紙「毎週日曜4時間の保守窓」＝年間約224時間停止 → <b>実質97.4%。要件を満たせない。</b></td></tr>
+      </table>
+      <p style="margin-bottom:0;font-size:13.5px">他にも5つ仕込んであります。全部見つけたら、あなたの勝ちです。</p>
+    </div>
+
+    <div class="note">
+      <b>ここで立ち止まって考えてください。</b> Bob は「本文と別紙で書いてあることが違う」という事実を提示しました。でも、<b>どれが本当に致命的か</b>を決めたのはあなたです。会計連携先の矛盾は提案の骨格を壊しますが、モバイル対応の矛盾は後で調整できます。<b>この重み付けは、AIにはできません。</b>
+    </div>
+
+    <ul class="chk">
+      <li><input type="checkbox"><span><code>issues.html</code> が生成され、5つ以上の論点が挙がっている</span></li>
+      <li><input type="checkbox"><span>そのうち「これは提案の前提を壊す」と自分で判断できたものが1つ以上ある</span></li>
+    </ul>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-h"><span class="n">1-4</span><span class="t">（余力があれば）質問票にする</span></div>
+  <div class="step-b">
+    <div class="pr">
+      <div class="pr-h"><span class="lbl">AGENT MODE</span><button onclick="cp(this)">コピー</button></div>
+      <pre>@issues.html の内容から、クライアントに送付する「質問票」を questions.html として作成して。深刻度「高」のものを上に、丁寧なビジネス日本語で、回答欄付きの表形式にして。印刷してそのまま渡せるレイアウトにすること。</pre>
+    </div>
+  </div>
+</div>
+</section>
+
+<hr>
+
+<!-- ============ LAB 2 ============ -->
+<section id="lab2">
+<h2><span class="no">LAB 2</span>要件を、触れる画面に変える</h2>
+<p class="sub">静止画のパワポではなく、その場で操作できるモックを作ります。</p>
+
+<div class="goal">
+<b>このLabのゴール。</b> Lab 1 で作った <code>requirements.html</code> から、<b>実際にブラウザで動く</b>工事原価ダッシュボードのモックを作ります。<br>
+<b>本当の学び：</b> 実装させる前に、PLANモードで仕様を固める。<b>手戻りは、計画段階でしか安く潰せません。</b>
+</div>
+
+<div class="step">
+  <div class="step-h"><span class="n">2-1</span><span class="t">仕様を先に決める</span></div>
+  <div class="step-b">
+    <p><span class="mode plan">PLAN</span> モードに切り替えます。<b>実装の前に、何を作るかを言語化します。</b></p>
+    <div class="pr">
+      <div class="pr-h"><span class="lbl">PLAN MODE</span><button onclick="cp(this)">コピー</button></div>
+      <pre>@requirements.html の要件のうち、以下の3つを満たすモックアップを作りたい。実装方針を提案して。
+
+- FR-02 実行予算と発生原価の差異を、工事別・工種別に表示
+- FR-03 原価率が受注時想定を超過した工事をアラート表示
+- FR-09 工事別・工種別・協力会社別の原価照会
+
+【制約】
+- ブラウザでHTMLファイルを開くだけで動くこと（Webサーバーを使わない）
+- 単一のHTMLファイルに収める（CSS・JSも内包）
+- サンプルデータはコード内に埋め込む（3工事分）
+- フォントは IBM Plex Sans JP
+- クライアント（ワトソン建設）の初回提示用。初見で3秒で「やばい工事」が分かること
+
+まず画面構成とデータ構造を提案して。実装はまだしないで。</pre>
+    </div>
+    <p>Bob が計画を出してきます。<b>ここで読んで、違うと思ったら口を出してください。</b>例：「アラートは赤ではなく、モノクロ＋太字で表現して」「KPIカードは4つではなく3つに絞って」</p>
+    <div class="note">
+      <b>これがPLANモードの価値です。</b> 実装してから直すと10分かかる修正が、計画段階なら10秒で済みます。<b>ここで手を抜くと、あとで必ず取り返しがつかなくなります。</b>
+    </div>
+    <p>方針に納得したら、<code>mockup_req.md</code> として確定させます。</p>
+    <div class="pr">
+      <div class="pr-h"><span class="lbl">AGENT MODE</span><button onclick="cp(this)">コピー</button></div>
+      <pre>今の方針を mockup_req.md として保存して。画面構成、データ構造、デザイン方針、サンプルデータの定義を含めて。</pre>
+    </div>
+    <div class="note">
+      <b>これは .md でいい。</b> <code>mockup_req.md</code> は「Bobへの入力」であって、クライアントに見せるものではありません。<b>読み手がAIなら、Markdownが正解です。</b>
+    </div>
+    <ul class="chk">
+      <li><input type="checkbox"><span><code>mockup_req.md</code> ができた</span></li>
+      <li><input type="checkbox"><span>Bobの計画に対して、自分で1回以上の修正指示を出した</span></li>
+    </ul>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-h"><span class="n">2-2</span><span class="t">実装させる</span></div>
+  <div class="step-b">
+    <div class="pr">
+      <div class="pr-h"><span class="lbl">AGENT MODE</span><button onclick="cp(this)">コピー</button></div>
+      <pre>@mockup_req.md の仕様に従って、mockup/index.html を実装して。単一HTMLファイルで、CSS・JavaScript を内包すること。ブラウザで開くだけで動くこと。</pre>
+    </div>
+    <p>生成されたら、<code>mockup/index.html</code> をブラウザで開いて動作を確認します（ファイルをダブルクリック、またはブラウザにドラッグ＆ドロップ）。</p>
+    <div class="card">
+      <h4>ここで手を止めて、考えてください</h4>
+      <p style="margin-bottom:0">いま出てきたものは、<b>あなたが 2-1 で書いた仕様の写像です。</b>気に入らない箇所があるとしたら、それはBobのせいではなく、仕様に書かなかったからです。<br><br>
+      <b>AIの出力の質は、指示の質を超えません。</b>これが今日、いちばん覚えて帰ってほしいことです。</p>
+    </div>
+    <ul class="chk">
+      <li><input type="checkbox"><span>ブラウザでモックが開き、実際に操作できた</span></li>
+    </ul>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-h"><span class="n">2-3</span><span class="t">反復する ― 時間があれば</span></div>
+  <div class="step-b">
+    <div class="card blue">
+      <h4>意識づけだけしておきます</h4>
+      <p style="margin-bottom:0">実務では、<b>1回で完璧なものは絶対に出ません。</b>3周まわす前提でスケジュールを引いてください。1周は数十秒で終わります。<br><br>
+      今日は演習時間の都合上、<b>ここは強制しません。</b>時間が余った人だけ、下のプロンプトを試してください。余っていない人は 2-4 へ進んでください。</p>
+    </div>
+    <div class="pr">
+      <div class="pr-h"><span class="lbl">AGENT MODE — 改善例（任意）</span><button onclick="cp(this)">コピー</button></div>
+      <pre>@mockup/index.html を改善して。mockup_req.md も同時に更新すること。
+
+1. 原価率が想定を超過している工事は、一覧の先頭に固定表示する
+2. 工種別の差異を、金額の大きい順に並べる
+3. 「この工事はあと何円の原価超過で赤字になるか」を明示する</pre>
+    </div>
+    <ul class="chk">
+      <li><input type="checkbox"><span>（任意）1回以上、改善指示を出した</span></li>
+    </ul>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-h"><span class="n">2-4</span><span class="t">文書化まで自動でやらせる</span></div>
+  <div class="step-b">
+    <p>普通、モックを作ったら設計書は後回しになります。<b>AI駆動開発では、後回しにする理由がありません。</b></p>
+    <div class="pr">
+      <div class="pr-h"><span class="lbl">AGENT MODE</span><button onclick="cp(this)">コピー</button></div>
+      <pre>@mockup/index.html について、以下2つを作って。どちらも単一のHTMLファイル（CSS内包）で、ブラウザで開くだけで読めること。
+
+1. design.html ― 画面構成、データ構造、使用技術、各機能の説明（社内レビュー用）
+2. README.html ― モックの開き方と操作方法（クライアントに渡す用、非エンジニア向け）
+
+いずれも人が読む資料なので、Markdownではなく HTML で作ること。色は青とグレーのみ。</pre>
+    </div>
+    <ul class="chk">
+      <li><input type="checkbox"><span><code>design.html</code> と <code>README.html</code> がブラウザで開いた</span></li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<hr>
+
+<!-- ============ LAB 3 ============ -->
+<section id="lab3">
+<h2><span class="no">LAB 3</span>実データから、RFPに書かれていない課題を見つける</h2>
+<p class="sub">ここで差がつきます。RFPに答えるだけの提案は、負けます。</p>
+
+<div class="goal">
+<b>このLabのゴール。</b> ワトソン建設の共有フォルダ（実際に散らかっています）をBobに読ませ、<b>クライアント自身が気づいていない課題</b>を発見します。<br>
+<b>本当の学び：</b> これは従来 RPA やマクロがやっていた領域です。RPAは「画面操作を録画」します。だから画面が変わると壊れます。<b>エージェントは「意図」を記述します。だから壊れません。</b>
+</div>
+
+<div class="card dark">
+<h4>まず、フォルダを覗いてみてください</h4>
+<p style="margin-bottom:0"><code>lab3-shared-folder/</code> を開いてみてください。<b>命名規則はバラバラ。同じ情報が複数ファイルにある。文字コードも混在。「デスクトップ整理して_TODO.txt」まで入っている。</b><br><br>これは、実際のクライアント先で日常的に目にする光景です。</p>
+</div>
+
+<div class="step">
+  <div class="step-h"><span class="n">3-1</span><span class="t">棚卸しさせる</span></div>
+  <div class="step-b">
+    <p><span class="mode">AGENT</span> モードで実行します（Excelを読むため）。</p>
+    <div class="pr">
+      <div class="pr-h"><span class="lbl">AGENT MODE</span><button onclick="cp(this)">コピー</button></div>
+      <pre>@lab3-shared-folder/ の中身を全部見て、以下を教えて。ファイルはまだ作らなくていい。
+
+1. どのシステムから、どんなデータが出力されているか
+2. 同じ情報が複数のファイルに重複していないか
+3. 明らかにおかしい・怪しいと感じるファイルはどれか
+4. このフォルダの状態そのものが示している、組織的な問題は何か
+
+コンサルタントの目線で、遠慮なく指摘して。</pre>
+    </div>
+    <div class="note">
+      4番の問いに注目してください。<b>「フォルダが散らかっている」ことは、単なる不衛生ではありません。</b>「誰も全体を見ていない」「正が決まっていない」という組織の問題が、そのまま形になったものです。これは提案書の "背景" にそのまま書けます。
+    </div>
+    <ul class="chk">
+      <li><input type="checkbox"><span>Bob がフォルダ全体の構造と問題を説明できた</span></li>
+    </ul>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-h"><span class="n">3-2</span><span class="t">数字を突き合わせさせる ← 本番</span></div>
+  <div class="step-b">
+    <p><span class="mode">AGENT</span> モードに切り替えます。<b>Bobはここで Python を書いて、自分で実行します。</b>見ていてください。</p>
+    <div class="pr">
+      <div class="pr-h"><span class="lbl">AGENT MODE</span><button onclick="cp(this)">コピー</button></div>
+      <pre>@lab3-shared-folder/ 配下の全ファイル（Excel・CSV・テキスト）を横断的に分析して、経営上のリスクを findings.html にまとめて。
+
+【必ず検証すること】
+1. 各工事の原価率。受注時の想定と比べて、危険な工事はないか
+2. 資材の「単価マスタ」と「実際の発注単価」に乖離はないか
+3. 買掛金の滞留（長期未払い）はないか。特定の取引先に偏っていないか
+4. 受注金額が、システム間・ファイル間で一致しているか
+5. 同じ帳票の複数版で、数字が食い違っていないか
+6. 発注数量と搬入数量に差異はないか
+7. IT費用に無駄（未使用ライセンス、部門独自契約）はないか
+
+【分析方法】
+- 必要ならPythonスクリプトを書いて実行してよい
+- 文字コードが混在しているので、読めないファイルは自動で判定して対処すること
+
+【出力】findings.html に、以下の列を持つ表形式で：
+No / 発見事項 / 金額インパクト / 根拠ファイル / なぜ起きたか(仮説) / 深刻度
+
+金額は必ず数字で出すこと。「〜と思われる」ではなく「〜円」と書くこと。
+
+【形式】
+- 単一のHTMLファイル（CSS内包）。ブラウザで開くだけで読めること
+- 人が読むレポートなので、Markdownではなく HTML で作ること
+- 色は青とグレーのみ。フォントは IBM Plex Sans JP</pre>
+    </div>
+
+    <div class="warn">
+      <b>途中で承認を求められます。</b> Bob が Python を実行しようとすると確認ダイアログが出ます。これが Human-in-the-loop です。<b>何を実行しようとしているか読んでから</b>承認してください。実務では、これを読まずに全承認する習慣がインシデントを生みます。
+    </div>
+
+    <div class="card blue">
+      <h4>答え合わせ：この7つが埋まっています</h4>
+      <table style="margin:12px 0 0">
+      <tr><th style="width:40px">#</th><th>発見されるべきこと</th><th style="width:130px">インパクト</th></tr>
+      <tr><td class="mono">1</td><td><b>P-0028 愛知生産工場改修が赤字転落寸前。</b>原価率 98.3%（受注時想定 82%）。うち鉄骨工事が予算比 119%</td><td class="hl">利益がほぼ消滅</td></tr>
+      <tr><td class="mono">2</td><td><b>H形鋼を単価マスタより 18.8% 高く発注している。</b>マスタ ¥128,000/t vs 実発注 ¥152,000/t。マスタは2025年4月から未改定</td><td class="hl">↑の直接原因</td></tr>
+      <tr><td class="mono">3</td><td><b>大成鉄工への買掛金 ¥84,200,000 が120日超で滞留。</b>全社の120日超債務のほぼ全額が1社に集中</td><td class="hl">¥84.2M</td></tr>
+      <tr><td class="mono">4</td><td><b>P-0028 の受注金額が一致しない。</b>Salesforce ¥1,180M vs 見積書(確定) ¥1,240M</td><td class="hl">¥60M の差</td></tr>
+      <tr><td class="mono">5</td><td><b>完成工事原価報告書の2つの版で完成工事高が違う。</b>最終版 ¥18,420M vs コピー ¥18,240M</td><td class="hl">¥180M の差</td></tr>
+      <tr><td class="mono">6</td><td><b>発注したのに搬入記録がない資材が3件、逆に過剰納品が2件。</b>検収プロセスが機能していない</td><td class="hl">未検収</td></tr>
+      <tr><td class="mono">7</td><td><b>未承認のSaaS契約（シャドーIT）が8件。</b>情報システム部が実態を把握できていない</td><td class="hl">¥24.9M/年</td></tr>
+      </table>
+    </div>
+
+    <div class="card dark">
+      <h4>ここで、Lab 1 と繋がります</h4>
+      <p style="margin-bottom:0">Lab 1 で見つけた矛盾「<b>受注金額の正が Salesforce なのか見積書なのか、RFPで決まっていない</b>」を思い出してください。<br><br>
+      Lab 3 で、その矛盾が <b>実際に6,000万円のズレとして顕在化している</b> ことが分かりました。<br><br>
+      <b>これが提案の武器です。</b>「RFPのこの記述、実は御社のデータ上で既に問題が起きています」— 初回訪問でこれを言えるコンサルタントを、クライアントは信頼します。</p>
+    </div>
+
+    <ul class="chk">
+      <li><input type="checkbox"><span><code>findings.html</code> が生成され、金額付きで5件以上の発見がある</span></li>
+      <li><input type="checkbox"><span>Bob が Shift-JIS のファイルを自力で読めたことを確認した</span></li>
+      <li><input type="checkbox"><span>①原価率超過 と ②単価マスタ乖離 が「原因と結果」で繋がっていることに気づいた</span></li>
+    </ul>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-h"><span class="n">3-3</span><span class="t">クライアントに見せる形にする</span></div>
+  <div class="step-b">
+    <div class="pr">
+      <div class="pr-h"><span class="lbl">AGENT MODE</span><button onclick="cp(this)">コピー</button></div>
+      <pre>@findings.html を、経営層向けの1枚レポート report.html にして。
+
+- 単一HTMLファイル。ブラウザで開くだけで見られること
+- 最も深刻な発見を最上部に、金額を大きく表示
+- 「原因 → 結果」の因果関係が分かる図を含める（HTML/CSSで描く）
+- 色は青とグレーのみ。フォントは IBM Plex Sans JP
+- 経営会議で3分で説明できる情報量に絞ること</pre>
+    </div>
+    <ul class="chk">
+      <li><input type="checkbox"><span><code>report.html</code> がブラウザで開き、経営層に見せられる状態になった</span></li>
+    </ul>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-h"><span class="n">3-4</span><span class="t">「毎月やる」形に変える ← RPAとの決定的な違い</span></div>
+  <div class="step-b">
+    <p>いまやった分析は、<b>本来は毎月やるべき</b>ものです。RPAなら、ここでロボットを組みます。ファイル名が変わったら壊れるロボットを。</p>
+    <div class="pr">
+      <div class="pr-h"><span class="lbl">AGENT MODE</span><button onclick="cp(this)">コピー</button></div>
+      <pre>いま実行した分析を、毎月同じ手順で再実行できるように monthly_analysis.md として手順書化して。次の担当者がこのファイルをBobに渡すだけで同じ分析ができる粒度で書いて。ファイル名や列名が多少変わっても対応できるよう、「何を探すか」を意図ベースで記述すること。</pre>
+    </div>
+    <div class="card">
+      <h4>RPA と エージェントの違い</h4>
+      <table style="margin:12px 0 0">
+      <tr><th style="width:50%">RPA・マクロ</th><th>AIエージェント</th></tr>
+      <tr><td>「A1セルの値を、B列2行目にコピー」<br><span style="color:var(--g60);font-size:13px">＝ 操作を記述する</span></td><td class="hl">「単価マスタと実発注単価を突き合わせて、乖離が10%を超える資材を挙げて」<br><span style="font-size:13px;font-weight:400">＝ 意図を記述する</span></td></tr>
+      <tr><td>列が1つ増えると壊れる</td><td class="hl">列が増えても意図は変わらないので動く</td></tr>
+      <tr><td>作るのに数週間、保守にも人がいる</td><td class="hl">作るのに数分。保守は自然言語の修正</td></tr>
+      </table>
+    </div>
+    <ul class="chk">
+      <li><input type="checkbox"><span><code>monthly_analysis.md</code> ができた</span></li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<hr>
+
+<!-- ============ WRAP ============ -->
+<section id="wrap">
+<h2><span class="no">WRAP-UP</span>今日、何をやったのか</h2>
+
+<p>今日のセッションで、以下を作りました。<b>従来、2週間かかっていた分量です。</b></p>
+
+<div class="grid3">
+  <div class="tile"><div class="k">LAB 1</div><div class="v">要件と論点</div><div class="d">requirements.html<br>issues.html<br>questions.html</div></div>
+  <div class="tile"><div class="k">LAB 2</div><div class="v">動くモック</div><div class="d">mockup/index.html<br>mockup_req.md<br>design.html / README.html</div></div>
+  <div class="tile"><div class="k">LAB 3</div><div class="v">実データの分析</div><div class="d">findings.html<br>report.html<br>monthly_analysis.md</div></div>
+</div>
+
+<div class="note">
+<b>気づきましたか。</b> 人が読むものは全部 <code>.html</code>、Bobへの入力（<code>mockup_req.md</code> / <code>monthly_analysis.md</code>）だけが <code>.md</code> です。<b>形式は、読み手で決まります。</b>
+</div>
+
+<h3>3つのLabに共通していた構造</h3>
+<div class="flow">
+  <div class="f"><div class="s">01</div><div class="l">文脈を渡す</div><div class="m">@でファイルを指定する。<br>渡さなければAIは何も知らない</div></div>
+  <div class="f"><div class="s">02</div><div class="l">意図を定義する</div><div class="m">何を、なぜ、どこまで。<br>出力の質は指示の質を超えない</div></div>
+  <div class="f"><div class="s">03</div><div class="l">反復する</div><div class="m">1回で完璧は出ない。<br>3周まわす前提で組む</div></div>
+  <div class="f"><div class="s">04</div><div class="l">判断する</div><div class="m">何が致命的かを決めるのは、<br>最後まで人間の仕事</div></div>
+</div>
+
+<div class="card dark">
+<h4>持ち帰ってほしい1行</h4>
+<p style="font-size:19px;color:var(--white);font-weight:500;margin:8px 0 0">価値の源泉は「手を動かす速さ」ではなく、<span style="color:var(--b40)">「何を作らせるかを定義する力」</span>に移りました。</p>
+<p style="margin:14px 0 0;color:var(--g30);font-size:14px">そしてそれは、コンサルタントが元々やってきたことです。今日やったのは、新しいスキルの習得ではありません。<b>あなたが持っているスキルを、AIに接続しただけです。</b></p>
+</div>
+
+<h3>明日からできること</h3>
+<ul class="chk">
+  <li><input type="checkbox"><span>手元の資料（議事録・提案書・Excel）を1つBobに読ませて、構造化させてみる</span></li>
+  <li><input type="checkbox"><span>「矛盾を洗い出して」を、自分の案件の資料でやってみる</span></li>
+  <li><input type="checkbox"><span>雑な依頼と、仕様を書いた依頼の差を、もう一度自分で試す</span></li>
+</ul>
+</section>
+
+<hr>
+
+<!-- ============ APPENDIX A ============ -->
+<section id="prompts">
+<h2><span class="no">付録 A</span>持ち帰り用プロンプト集</h2>
+<p class="sub">今日使ったものを、汎用形にしてあります。<code>[ ]</code> を自分の案件に置き換えてください。</p>
+
+<div class="card">
+<h4>共通の作法（毎回これを付ける）</h4>
+<p style="margin-bottom:0">
+<b>① Officeファイルを扱うときは AGENT モード。</b> ASKモードは <code>.pptx</code>/<code>.xlsx</code> を弾くことがあります。<br>
+<b>② 人が読む成果物は「HTMLで作って」と明示する。</b> 言わないとBobは <code>.md</code> で作ります。<br>
+<b>③ 「まだファイルは作らなくていい」を付けると、分析だけさせられます。</b>
+</p>
+</div>
+
+<h3>資料を理解する</h3>
+<div class="pr">
+  <div class="pr-h"><span class="lbl">AGENT MODE</span><button onclick="cp(this)">コピー</button></div>
+  <pre>@[資料ファイル] を読んで、以下を教えて。ファイルはまだ作らなくていい。
+1. このクライアントは何に困っているのか（3行で）
+2. この資料の真のゴールは何か
+3. 最初に確認すべき「引っかかる点」を5つ</pre>
+</div>
+
+<h3>複数資料の矛盾を洗い出す</h3>
+<div class="pr">
+  <div class="pr-h"><span class="lbl">AGENT MODE</span><button onclick="cp(this)">コピー</button></div>
+  <pre>@[資料A] と @[資料B] を突き合わせて、矛盾・不整合・確認が必要な点を issues.html にまとめて。
+表形式で、列は：No / 論点 / 資料Aの記述 / 資料Bの記述 / なぜ問題か / 深刻度 / 確認文
+「確認文」は、そのままクライアントに送れる丁寧な日本語で。
+単一のHTMLファイル（CSS内包）で作ること。Markdownではなく HTML。</pre>
+</div>
+
+<h3>散らかったフォルダを分析する</h3>
+<div class="pr">
+  <div class="pr-h"><span class="lbl">AGENT MODE</span><button onclick="cp(this)">コピー</button></div>
+  <pre>@[フォルダ]/ 配下の全ファイルを横断分析して、findings.html にまとめて。
+【検証すること】[固有の観点をここに書く]
+【方法】必要ならPythonを書いて実行してよい。文字コード混在は自動判定して対処すること。
+【出力】No / 発見事項 / 金額インパクト / 根拠ファイル / なぜ起きたか / 深刻度
+金額は必ず数字で出すこと。単一のHTMLファイルで作ること。</pre>
+</div>
+
+<h3>要件から動くモックを作る（2段階）</h3>
+<div class="pr">
+  <div class="pr-h"><span class="lbl">① PLAN MODE</span><button onclick="cp(this)">コピー</button></div>
+  <pre>@[要件ファイル] の要件のうち [対象要件] を満たすモックを作りたい。実装方針を提案して。
+【制約】ブラウザで開くだけで動く単一HTML。サンプルデータ埋め込み。初見3秒で要点が伝わること。
+まず画面構成とデータ構造を提案して。実装はまだしないで。</pre>
+</div>
+<div class="pr">
+  <div class="pr-h"><span class="lbl">② AGENT MODE</span><button onclick="cp(this)">コピー</button></div>
+  <pre>いまの方針を mockup_req.md として保存し、それに従って mockup/index.html を実装して。</pre>
+</div>
+
+<h3>成果物を文書化する</h3>
+<div class="pr">
+  <div class="pr-h"><span class="lbl">AGENT MODE</span><button onclick="cp(this)">コピー</button></div>
+  <pre>@[成果物] について、design.html（社内レビュー用の設計書）と README.html（クライアント向けの使い方説明、非エンジニア向け）を作って。
+どちらも単一のHTMLファイル（CSS内包）で、ブラウザで開くだけで読めること。Markdownでは作らないこと。</pre>
+</div>
+
+<h3>定例作業を「毎月回せる」形にする</h3>
+<div class="pr">
+  <div class="pr-h"><span class="lbl">AGENT MODE</span><button onclick="cp(this)">コピー</button></div>
+  <pre>いま実行した分析を、毎月同じ手順で再実行できるように [名前].md として手順書化して。
+次の担当者がこのファイルをBobに渡すだけで同じ分析ができる粒度で書いて。
+ファイル名や列名が多少変わっても対応できるよう、「何を探すか」を意図ベースで記述すること。</pre>
+</div>
+</section>
+
+<hr>
+
+<!-- ============ APPENDIX B ============ -->
+<section id="trouble">
+<h2><span class="no">付録 B</span>困ったとき</h2>
+
+<table>
+<tr><th style="width:32%">症状</th><th>対処</th></tr>
+<tr><td><b>「参照対象外のファイルです」と言われる</b></td><td><b>ASKモードになっている。</b>ASKは <code>.pptx</code>/<code>.xlsx</code> を読めない。<b>AGENT モードに切り替える。</b>AGENTならPythonでファイルを開いて読める。今日いちばん多いつまずきです。</td></tr>
+<tr><td><b>@ を打ってもファイルが出ない</b></td><td>フォルダを<b>フォルダごと</b>開いていない可能性が高い。<b>Open Folder</b> から <code>DTC_Bob_Handson_20260713</code> を開き直す。</td></tr>
+<tr><td><b>それでも pptx / xlsx が読めない</b></td><td>「Pythonで python-pptx / openpyxl を使って中身を抽出してから分析して」と追加で指示する。Bobは自分でライブラリを入れて読む。</td></tr>
+<tr><td><b>文字化けする</b></td><td>「このファイルは Shift-JIS の可能性がある。文字コードを自動判定して読み直して」と伝える。</td></tr>
+<tr><td><b>頼んでいないのに .md で作られる</b></td><td>Bobのデフォルトは Markdown。<b>「HTMLで作って。Markdownでは作らないこと」と明示的に書く。</b></td></tr>
+<tr><td><b>途中で止まる／承認待ちで進まない</b></td><td>Bobパネル内に承認ボタンが出ている。何を実行しようとしているか読んでから承認する。</td></tr>
+<tr><td><b>出力が的外れ</b></td><td>ほぼ確実に、指示が曖昧。「誰が」「何のために」「どこまで」を足す。Lab 2-1 でやった通り。</td></tr>
+<tr><td><b>生成物が長すぎる／短すぎる</b></td><td>「A4で1枚に収めて」「表形式で、10行以内で」など、量を明示的に指定する。</td></tr>
+<tr><td><b>会話が長くなって挙動が怪しい</b></td><td>新しいチャットを開く。必要なファイルを @ で渡し直せば、文脈は復元できる。</td></tr>
+<tr><td><b>それでもダメ</b></td><td>手を挙げてください。IBM側スタッフが回ります。</td></tr>
+</table>
+
+<div class="card" style="margin-top:32px">
+<h4>本日の教材データについて</h4>
+<p style="margin-bottom:0">「ワトソン建設株式会社」およびすべてのデータは、本ハンズオンのために生成した<b>完全な架空データ</b>です。実在の企業・団体・個人とは一切関係ありません。</p>
+</div>
+
+<p style="margin-top:48px;color:var(--g60);font-size:13px">
+IBM Bob ハンズオン｜ワトソン建設 提案準備シミュレーション<br>
+日本アイ・ビー・エム株式会社　Solution Architect　本郷 元<br>
+2026年7月
+</p>
+</section>
+
+</div>
+</main>
+</div>
+
+<script>
+// copy buttons（file:// でも動くようフォールバックを持つ）
+function cp(btn){
+  const pre = btn.closest('.pr').querySelector('pre');
+  const text = pre.innerText;
+  const ok = ()=>{
+    const o = btn.textContent;
+    btn.textContent = 'コピーしました'; btn.classList.add('done');
+    setTimeout(()=>{ btn.textContent = o; btn.classList.remove('done'); }, 1600);
+  };
+  const fallback = ()=>{
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); ok(); } catch(e){ btn.textContent = '手動でコピーしてください'; }
+    document.body.removeChild(ta);
+  };
+  if(navigator.clipboard && window.isSecureContext){
+    navigator.clipboard.writeText(text).then(ok).catch(fallback);
+  } else {
+    fallback();
+  }
+}
+
+// ---- storage (file:// でも落ちないようフォールバックする) ----
+const mem = {};
+const store = {
+  get(k){ try { return localStorage.getItem(k); } catch(e){ return mem[k] ?? null; } },
+  set(k,v){ try { localStorage.setItem(k,v); } catch(e){ mem[k] = v; } },
+  del(k){ try { localStorage.removeItem(k); } catch(e){ delete mem[k]; } }
+};
+
+const boxes = [...document.querySelectorAll('.chk input[type=checkbox]')];
+const links = [...document.querySelectorAll('nav li a')];
+const pt = document.getElementById('pt');
+const pp = document.getElementById('pp');
+const pf = document.getElementById('pf');
+
+// 各チェックボックスに、所属セクションIDと安定したキーを持たせる
+boxes.forEach((b,i)=>{
+  const sec = b.closest('section');
+  b.dataset.sec = sec ? sec.id : '';
+  b.dataset.key = 'bobhandson_v2_' + i;
+  if(store.get(b.dataset.key) === '1'){
+    b.checked = true;
+    b.closest('li').classList.add('on');
+  }
+  b.addEventListener('change', ()=>{
+    store.set(b.dataset.key, b.checked ? '1' : '0');
+    b.closest('li').classList.toggle('on', b.checked);
+    prog();
+  });
+});
+
+// ナビの各項目に「済/全」のカウンタを差し込む
+links.forEach(a=>{
+  const id = (a.getAttribute('href')||'').slice(1);
+  const n = boxes.filter(b=>b.dataset.sec === id).length;
+  if(n > 0){
+    const c = document.createElement('span');
+    c.className = 'cnt';
+    c.dataset.sec = id;
+    a.appendChild(c);
+  }
+});
+
+function prog(){
+  const done = boxes.filter(b=>b.checked).length;
+  const total = boxes.length;
+  const pct = total ? Math.round(done/total*100) : 0;
+  pt.textContent = '進捗 ' + done + ' / ' + total;
+  pp.textContent = pct + '%';
+  pf.style.width = pct + '%';
+
+  document.querySelectorAll('nav .cnt').forEach(c=>{
+    const inSec = boxes.filter(b=>b.dataset.sec === c.dataset.sec);
+    const d = inSec.filter(b=>b.checked).length;
+    c.textContent = d + '/' + inSec.length;
+    c.classList.toggle('full', d === inSec.length && inSec.length > 0);
+  });
+}
+prog();
+
+document.getElementById('preset').addEventListener('click', ()=>{
+  if(!confirm('すべてのチェックを外します。よろしいですか？')) return;
+  boxes.forEach(b=>{
+    b.checked = false;
+    b.closest('li').classList.remove('on');
+    store.del(b.dataset.key);
+  });
+  prog();
+});
+
+// active nav
+const secs = [...document.querySelectorAll('section')];
+window.addEventListener('scroll', ()=>{
+  let cur = '';
+  secs.forEach(s=>{ if(window.scrollY >= s.offsetTop - 120) cur = s.id; });
+  links.forEach(a=>{
+    a.classList.toggle('act', a.getAttribute('href') === '#'+cur);
+  });
+}, {passive:true});
+</script>
+</body>
+</html>
