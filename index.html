@@ -258,8 +258,8 @@ hr{border:0;border-top:1px solid var(--g20);margin:48px 0}
 <div class="step">
   <div class="step-h"><span class="n">0-2</span><span class="t">教材フォルダを開く</span></div>
   <div class="step-b">
-    <p>配布された <code>DTC_Bob_Handson_20260713</code> フォルダを、<b>フォルダごと</b> Bob で開きます（<b>Open Folder</b>）。</p>
-    <pre>DTC_Bob_Handson_20260713/
+    <p>配布された <code>Bob_Handson_20260713</code> フォルダを、<b>フォルダごと</b> Bob で開きます（<b>Open Folder</b>）。</p>
+    <pre>Bob_Handson_20260713/
 ├── index.html                    ← この手順書
 ├── lab1-rfp/
 │   ├── 01_RFP_工事原価管理システム刷新.pptx
@@ -846,7 +846,7 @@ No / 発見事項 / 金額インパクト / 根拠ファイル / なぜ起きた
 <table>
 <tr><th style="width:32%">症状</th><th>対処</th></tr>
 <tr><td><b>「参照対象外のファイルです」と言われる</b></td><td><b>ASKモードになっている。</b>ASKは <code>.pptx</code>/<code>.xlsx</code> を読めない。<b>AGENT モードに切り替える。</b>AGENTならPythonでファイルを開いて読める。今日いちばん多いつまずきです。</td></tr>
-<tr><td><b>@ を打ってもファイルが出ない</b></td><td>フォルダを<b>フォルダごと</b>開いていない可能性が高い。<b>Open Folder</b> から <code>DTC_Bob_Handson_20260713</code> を開き直す。</td></tr>
+<tr><td><b>@ を打ってもファイルが出ない</b></td><td>フォルダを<b>フォルダごと</b>開いていない可能性が高い。<b>Open Folder</b> から <code>Bob_Handson_20260713</code> を開き直す。</td></tr>
 <tr><td><b>それでも pptx / xlsx が読めない</b></td><td>「Pythonで python-pptx / openpyxl を使って中身を抽出してから分析して」と追加で指示する。Bobは自分でライブラリを入れて読む。</td></tr>
 <tr><td><b>文字化けする</b></td><td>「このファイルは Shift-JIS の可能性がある。文字コードを自動判定して読み直して」と伝える。</td></tr>
 <tr><td><b>頼んでいないのに .md で作られる</b></td><td>Bobのデフォルトは Markdown。<b>「HTMLで作って。Markdownでは作らないこと」と明示的に書く。</b></td></tr>
